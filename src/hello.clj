@@ -1,5 +1,6 @@
 (ns hello-world
-  (:use compojure.core, ring.adapter.jetty, incanter.core, incanter.stats, incanter.charts ,hiccup.core)
+  (:use compojure.core, ring.adapter.jetty, incanter.core, incanter.stats, incanter.charts,
+	incanter.io ,hiccup.core)
   (:require [compojure.route :as route])
   (:import (java.io ByteArrayOutputStream
                     ByteArrayInputStream)))
@@ -46,12 +47,30 @@
        :headers {"Content-Type" "image/png"}
        :body in-stream}))
 
+(defn species-graph
+  []
+  (let [species-data (read-dataset "data/test.txt" :header true :delim \tab)
+	species (sel species-data :cols 10)
+	weight (sel species-data :cols 11)
+	chart (line-chart species weight)
+	out-stream (ByteArrayOutputStream.)
+	in-stream (do
+		    (save chart out-stream)
+		    (ByteArrayInputStream. 
+		     (.toByteArray out-stream)))]
+    
+    {:status 200
+     :headers {"Content-Type" "image/png"}
+     :body in-stream}))
 
- ;; define routes
+
+;; define routes
 (defroutes webservice
   (GET "/sample-normal" {params :params} 
     (gen-samp-hist-png (params :size) 
                        (params :mean) 
-                       (params :sd))))
+                       (params :sd)))
+  (GET "/species" [] (species-graph) ))
 
 (run-jetty webservice {:port 8080})
+  
