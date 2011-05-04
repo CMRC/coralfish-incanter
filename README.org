@@ -5,3 +5,11 @@
 ** About
 
 CoralFish is an FP7-funded project related to cold-water corals. As part of this project we need to build a web framework using advanced statistical tools. Many of the tools to be used already exist in R. We will build the framework using [[http://data-sorcery.org][Incanter]] to produce charts and attempt to bridge to the [[http://www.r-project.org/][R]] world using [[http://joelboehland.com/posts/all-your-datasets-r-belong-to-us.html][RIncanter]].
+
+** To Run
+>lein dep
+>lein jar
+
+** You will need
+
+[[https://github.com/technomancy/leiningen][Leiningen]]

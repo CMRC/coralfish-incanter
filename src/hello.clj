@@ -48,11 +48,12 @@
        :body in-stream}))
 
 (defn species-graph
-  []
+  [id]
   (let [species-data (read-dataset "data/test.txt" :header true :delim \tab)
-	species (sel species-data :cols 10)
-	weight (sel species-data :cols 11)
-	chart (line-chart species weight)
+	species-data-country (sel species-data :filter #(= (nth % 1) id))
+	species (sel species-data-country :cols 10)
+	weight (sel species-data-country :cols 11)
+	chart (line-chart species weight :title id)
 	out-stream (ByteArrayOutputStream.)
 	in-stream (do
 		    (save chart out-stream)
@@ -70,7 +71,7 @@
     (gen-samp-hist-png (params :size) 
                        (params :mean) 
                        (params :sd)))
-  (GET "/species" [] (species-graph) ))
+  (GET "/species/:id" [id] (species-graph id) ))
 
-(run-jetty webservice {:port 8080})
+(run-jetty webservice {:port 8000})
   
