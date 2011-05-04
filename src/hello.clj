@@ -64,6 +64,22 @@
      :headers {"Content-Type" "image/png"}
      :body in-stream}))
 
+(defn by-doi
+  [doi]
+  (let [species-data (read-dataset "http://doi.pangaea.de/10.1594/PANGAEA.724458?format=textfile" :header true :delim \tab :skip 21)
+	Plankton (sel species-data :cols 7)
+	Copepoda (sel species-data :cols 8)
+	chart (line-chart Plankton Copepoda)
+	out-stream (ByteArrayOutputStream.)
+	in-stream (do
+		    (save chart out-stream)
+		    (ByteArrayInputStream. 
+		     (.toByteArray out-stream)))]
+    
+    {:status 200
+     :headers {"Content-Type" "image/png"}
+     :body in-stream}))
+
 
 ;; define routes
 (defroutes webservice
@@ -71,7 +87,8 @@
     (gen-samp-hist-png (params :size) 
                        (params :mean) 
                        (params :sd)))
-  (GET "/species/:id" [id] (species-graph id) ))
+  (GET "/species/:id" [id] (species-graph id) )
+  (GET "/doi/:doi" [doi] (by-doi doi) ))
 
 (run-jetty webservice {:port 8000})
   
