@@ -5,6 +5,7 @@
   (:import (java.io ByteArrayOutputStream
                     ByteArrayInputStream)))
 
+(use '(com.evocomputing rincanter))
 
 ;; Pass a map as the first argument to be 
 ;; set as attributes of the element
@@ -64,31 +65,30 @@
      :headers {"Content-Type" "image/png"}
      :body in-stream}))
 
-(defn by-doi
-  [doi]
-  (let [species-data (read-dataset "http://doi.pangaea.de/10.1594/PANGAEA.724458?format=textfile" :header true :delim \tab :skip 21)
-	Plankton (sel species-data :cols 7)
-	Copepoda (sel species-data :cols 8)
-	chart (line-chart Plankton Copepoda)
+(defn r-graph
+  [id]
+  (r-eval "data(iris)")
+  (let [iris-data (r-eval "iris")
+	chart (line-chart :Petal.Length :Petal.Width :title "iris" :data iris-data)
 	out-stream (ByteArrayOutputStream.)
 	in-stream (do
 		    (save chart out-stream)
 		    (ByteArrayInputStream. 
-		     (.toByteArray out-stream)))]
+		     (.toByteArray out-stream)))
+        ]
     
     {:status 200
      :headers {"Content-Type" "image/png"}
      :body in-stream}))
 
-
 ;; define routes
 (defroutes webservice
   (GET "/sample-normal" {params :params} 
-    (gen-samp-hist-png (params :size) 
-                       (params :mean) 
-                       (params :sd)))
+       (gen-samp-hist-png (params :size) 
+                          (params :mean) 
+                          (params :sd)))
   (GET "/species/:id" [id] (species-graph id) )
-  (GET "/doi/:doi" [doi] (by-doi doi) ))
-
+  (GET "/coralfish/r" [id] (r-graph id) ))
+       
 (run-jetty webservice {:port 8000})
   

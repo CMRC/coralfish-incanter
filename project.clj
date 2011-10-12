@@ -5,5 +5,8 @@
 		 [compojure "0.5.2"]
 		 [ring/ring-jetty-adapter "0.3.1"]
 		 [hiccup "0.3.0"]
-		 [incanter "1.2.3-SNAPSHOT"]]
+		 [incanter "1.2.3"]]
+  :native-dependencies [[jriengine "0.8.4"]]
+  :dev-dependencies [[swank-clojure "1.4.0-SNAPSHOT"]
+                     [native-deps "1.0.5"]]
   :main hello)
