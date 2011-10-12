@@ -68,8 +68,9 @@
 (defn r-graph
   [id]
   (r-eval "data(iris)")
+  (r-eval "source (\"src/test.R\")")
   (let [iris-data (r-eval "iris")
-	chart (line-chart :Petal.Length :Petal.Width :title "iris" :data iris-data)
+	chart (line-chart :Petal.Length :Petal.Width :title (str (r-eval "myfunc('xxx')")) :data iris-data)
 	out-stream (ByteArrayOutputStream.)
 	in-stream (do
 		    (save chart out-stream)
