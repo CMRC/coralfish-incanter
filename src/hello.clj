@@ -3,7 +3,8 @@
 	incanter.io ,hiccup.core)
   (:require [compojure.route :as route])
   (:import (java.io ByteArrayOutputStream
-                    ByteArrayInputStream)))
+                    ByteArrayInputStream)
+           (java.lang Integer)))
 
 (use '(com.evocomputing rincanter))
 
@@ -65,6 +66,24 @@
      :headers {"Content-Type" "image/png"}
      :body in-stream}))
 
+(defn by-day
+  [byday bymonth byyear]
+  (with-data (read-dataset "data/logbook.csv" :header true)
+    (let [chart (doto (scatter-plot :lat :lon
+                                    :title (str byday "/" bymonth "/" byyear)
+                                    :data ($where {:day (Integer/parseInt byday)
+                                                   :month (Integer/parseInt bymonth)
+                                                   :year (Integer/parseInt byyear)})))
+          out-stream (ByteArrayOutputStream.)
+          in-stream (do
+                      (save chart out-stream)
+                      (ByteArrayInputStream. 
+                       (.toByteArray out-stream)))]
+          
+      {:status 200
+       :headers {"Content-Type" "image/png"}
+       :body in-stream})))
+  
 (defn r-graph
   [id]
   (r-eval "data(iris)")
@@ -89,7 +108,9 @@
                           (params :mean) 
                           (params :sd)))
   (GET "/species/:id" [id] (species-graph id) )
-  (GET "/coralfish/r" [id] (r-graph id) ))
+  (GET "/coralfish/r" [id] (r-graph id) )
+  (GET "/coralfish/day/:day/month/:month/year/:year" [day month year]
+       (by-day day month year) ))
        
 (run-jetty webservice {:port 8000})
   
