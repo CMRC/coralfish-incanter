@@ -86,10 +86,10 @@
   
 (defn r-graph
   [id]
-  (r-eval "data(iris)")
-  (r-eval "source (\"src/test.R\")")
-  (let [iris-data (r-eval "iris")
-	chart (line-chart :Petal.Length :Petal.Width :title (str (r-eval "myfunc('xxx')")) :data iris-data)
+  (r-eval "source (\"src/script.R\")")
+  (with-data (r-eval "bt")
+     (let
+	[chart (doto (scatter-plot :lat :lon :title (str (r-eval "names(bt)")) :data ($where {:speed {:$gt 2.5}})) )
 	out-stream (ByteArrayOutputStream.)
 	in-stream (do
 		    (save chart out-stream)
@@ -99,7 +99,7 @@
     
     {:status 200
      :headers {"Content-Type" "image/png"}
-     :body in-stream}))
+     :body in-stream})))
 
 ;; define routes
 (defroutes webservice
