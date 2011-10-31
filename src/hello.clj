@@ -86,10 +86,27 @@
   
 (defn r-graph
   [id]
-  (r-eval "source (\"src/script.R\")")
+  (r-eval "source(\"src/script.R\")")
   (with-data (r-eval "bt")
      (let
-	[chart (doto (scatter-plot :lat :lon :title (str (r-eval "names(bt)")) :data ($where {:speed {:$gt 2.5}})) )
+	[chart (doto (scatter-plot :lon :lat :title "speed > 2.5 knots" :data ($where {:speed {:$gt 2.5}})) )
+	out-stream (ByteArrayOutputStream.)
+	in-stream (do
+		    (save chart out-stream)
+		    (ByteArrayInputStream. 
+		     (.toByteArray out-stream)))
+        ]
+    
+    {:status 200
+     :headers {"Content-Type" "image/png"}
+     :body in-stream})))
+  
+(defn r-histo
+  [id]
+  (r-eval "source(\"src/script.R\")")
+  (with-data (r-eval "grilla.cpue$cpue")
+     (let
+	[chart (doto (histogram (sample-normal 1000)))
 	out-stream (ByteArrayOutputStream.)
 	in-stream (do
 		    (save chart out-stream)
@@ -101,6 +118,8 @@
      :headers {"Content-Type" "image/png"}
      :body in-stream})))
 
+
+
 ;; define routes
 (defroutes webservice
   (GET "/sample-normal" {params :params} 
@@ -109,6 +128,7 @@
                           (params :sd)))
   (GET "/species/:id" [id] (species-graph id) )
   (GET "/coralfish/r" [id] (r-graph id) )
+  (GET "/coralfish/r/histo" [id] (r-histo id) )
   (GET "/coralfish/day/:day/month/:month/year/:year" [day month year]
        (by-day day month year) ))
        
